@@ -15,6 +15,7 @@ pandas = "*"
 matplotlib = "*"
 sns = "*"
 django = "*"
+pymongo = "*"
 
 [requires]
 python_version = "3.8"
