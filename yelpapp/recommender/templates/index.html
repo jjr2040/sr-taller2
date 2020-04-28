@@ -24,7 +24,7 @@
             <h2 class="mt-1">Negocios</h2>
         </div>
         <div class="col-sm-4">
-            <a class="btn btn-primary pull-right" href="#" >Agregar negocio</a>
+            <a class="btn btn-primary pull-right" data-toggle="modal" data-target="#businessModal" >Agregar negocio</a>
         </div>
     </div>
     <div class="row">
@@ -94,5 +94,31 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block js %}
+<script>
+  $("#saveBusinessBtn").click(function () {
 
+    $.ajax({
+      url: 'addBusiness',
+      data: {
+        'name': $('#fname').val(),
+        'address': $('#faddress').val(),
+        'city': $('#fcity').val(),
+        'state': $('#fstate').val(),
+        'postalcode': $('#fpostalcode').val(),
+        'categories': $('#fcategories').val(),
+      },
+      dataType: 'json',
+      success: function (data) {
+        if (data.allright) {
+          $('#businessModal').modal('hide');
+          alert("Negocio creado");
+          window.location.href = '/';
+        }
+      }
+    });
+
+  });
+</script>
 {% endblock %}

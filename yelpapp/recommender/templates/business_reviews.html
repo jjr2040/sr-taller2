@@ -10,7 +10,12 @@
     </div>
 
     <div class="row">
+      <div class="col-sm-8 pl-0">
         <h2 class="mt-1">Reviews de {{ business_name }}</h2>
+      </div>
+      <div class="col-sm-4">
+        <a class="btn btn-primary pull-right" data-toggle="modal" data-target="#reviewModal" >Agregar review</a>
+      </div>
     </div>
 
     <div class="row">
@@ -33,4 +38,31 @@
     </div>
 </div>
 
+<input type="hidden" id="business_id" value='{{ business_id }}' />
+
+{% endblock %}
+
+{% block js %}
+<script>
+  $("#saveReviewBtn").click(function () {
+
+    $.ajax({
+      url: '/addReview',
+      data: {
+        'business_id': $('#business_id').val(),
+        'stars': $('#fstars').val(),
+        'text': $('#ftext').val(),
+      },
+      dataType: 'json',
+      success: function (data) {
+        if (data.allright) {
+          $('#reviewModal').modal('hide');
+          alert("Review aggregado");
+          location.reload();
+        }
+      }
+    });
+
+  });
+</script>
 {% endblock %}
