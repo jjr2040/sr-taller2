@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from django.http import Http404, JsonResponse
 from mongoengine import connect
 import uuid
+from .recommenders import neighbours_for_business
 
 from .models import Business, Review
 connect('yelp')
@@ -37,7 +38,10 @@ def business_reviews(request, business_id):
         return Http404("Negocio no encontrado.")
 
 def business_neighbours(request, business_id):
-    context = {}
+    neighbours = neighbours_for_business(business_id)
+    context = {
+        'neighbours': neighbours
+    }
     return render(request, 'business_neighbours.html', context=context)
 
 def add_business(request):

@@ -15,7 +15,13 @@ class Business (mongoengine.Document):
     attributes = mongoengine.ListField()
     categories = mongoengine.StringField()
     hours = mongoengine.ListField()
-    meta = {'collection': 'businesses'}
+    meta = {
+        'collection': 'businesses',
+        'indexes': [
+            'name',
+            'business_id'
+        ]
+    }
 
 class Review (mongoengine.Document):
     review_id = mongoengine.StringField()
@@ -27,6 +33,12 @@ class Review (mongoengine.Document):
     cool = mongoengine.IntField()
     text = mongoengine.StringField()
     date = mongoengine.StringField()
-    meta = {'collection': 'reviews'}
+    meta = {
+        'collection': 'reviews',
+        'indexes': [
+            'business_id',
+            'review_id'
+        ]
+    }
 
 

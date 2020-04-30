@@ -15,10 +15,10 @@ pandas = "*"
 matplotlib = "*"
 sns = "*"
 django = "*"
+scikit-learn = "==0.19.1"
+mongoengine = "*"
 bson = "*"
 pymongo = "*"
-scikit-learn = "*"
-mongoengine = "*"
 
 [requires]
 python_version = "3.8"
