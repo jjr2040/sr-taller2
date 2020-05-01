@@ -1,5 +1,7 @@
 import mongoengine
 
+from mongoengine import ReferenceField
+
 class Business (mongoengine.Document):
     business_id = mongoengine.StringField()
     name = mongoengine.StringField()
@@ -15,6 +17,7 @@ class Business (mongoengine.Document):
     attributes = mongoengine.ListField()
     categories = mongoengine.StringField()
     hours = mongoengine.ListField()
+    recommended_reviews = mongoengine.ListField(ReferenceField('Review'))
     meta = {
         'collection': 'businesses',
         'indexes': [

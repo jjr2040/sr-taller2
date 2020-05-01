@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from django.http import Http404, JsonResponse
 from mongoengine import connect
 import uuid
-from .recommenders import neighbours_for_business
+from .recommenders import neighbours_for_business, business_recommended_reviews
 
 from .models import Business, Review
 connect('yelp')
@@ -40,9 +40,20 @@ def business_reviews(request, business_id):
 def business_neighbours(request, business_id):
     neighbours = neighbours_for_business(business_id)
     context = {
+        'business_id': business_id,
         'neighbours': neighbours
     }
     return render(request, 'business_neighbours.html', context=context)
+
+
+def business_recommended_reviews_view(request, business_id):
+    business = businesses.filter(business_id=business_id).first()
+    context = {
+        'business_name': business.name,
+        'reviews': business_recommended_reviews(business_id)
+    }
+    return render(request, 'business_reviews.html', context=context)
+
 
 def add_business(request):
     new_business = Business(business_id=str(uuid.uuid4()),name=request.GET['name'], address=request.GET['address'], city=request.GET['city'], state=request.GET['state'], postal_code=request.GET['postalcode'], categories=request.GET['categories'], review_count=0, stars=0)

@@ -10,7 +10,12 @@
     </div>
 
     <div class="row">
-        <h2 class="mt-1">Vecinos</h2>
+        <div class="col-sm-8 pl-0">
+            <h2 class="mt-1">Vecinos</h2>
+        </div>
+        <div class="col-sm-4">
+            <a href="{% url 'business_recommended_reviews' business_id %}" class="btn btn-primary pull-right" >Ver reviews recomendados</a>
+        </div>
     </div>
 
     <div class="row">
@@ -24,7 +29,6 @@
               <th scope="col">State</th>
               <th scope="col">Reviews</th>
               <th scope="col">Stars</th>
-              <th scope="col">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -37,10 +41,6 @@
                 <td>{{business.state}}</td>
                 <td>{{business.review_count}}</td>
                 <td>{{business.stars}}</td>
-                <td style="min-width: 200px;">
-                    <a class="btn btn-primary" href="{% url 'business_reviews' business.business_id %}" >Reviews</a>
-                    <a class="btn btn-primary" href="{% url 'business_neighbours' business.business_id %}" >Vecinos</a>
-                </td>
             </tr>
             {% endfor %}
           </tbody>

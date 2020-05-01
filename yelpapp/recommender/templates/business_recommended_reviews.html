@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-8 pl-0">
+            <h1 class="mt-5">Sistemas de Recomendación - Taller 2</h1>
+        </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-8 pl-0">
+        <h2 class="mt-1">Reviews de {{ business_name }}</h2>
+      </div>
+    </div>
+
+    <div class="row">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">stars</th>
+              <th scope="col">review</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for review in reviews %}
+            <tr>
+                <td>{{review.stars}}</td>
+                <td>{{review.text}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+    </div>
+</div>
+
+<input type="hidden" id="business_id" value='{{ business_id }}' />
+
+{% endblock %}
+
+{% block js %}
+<script>
+  $("#saveReviewBtn").click(function () {
+
+    $.ajax({
+      url: '/addReview',
+      data: {
+        'business_id': $('#business_id').val(),
+        'stars': $('#fstars').val(),
+        'text': $('#ftext').val(),
+      },
+      dataType: 'json',
+      success: function (data) {
+        if (data.allright) {
+          $('#reviewModal').modal('hide');
+          alert("Review aggregado");
+          location.reload();
+        }
+      }
+    });
+
+  });
+</script>
+{% endblock %}

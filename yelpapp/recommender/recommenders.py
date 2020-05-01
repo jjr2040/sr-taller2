@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import re
 
 from surprise import Reader
 from surprise import Dataset
@@ -8,6 +9,12 @@ from surprise import SVD
 
 from sklearn.metrics import pairwise_distances
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import chi2
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 
 import pymongo
 from pymongo import MongoClient
@@ -73,4 +80,70 @@ def neighbours_for_business(business_id):
     for neighbour in business_neighbours_ids:
         business_neighbours.append(neighbour)
 
+    # Get reviews of the business neightbours selected
+    business_reviews_to_save = db.reviews.find({ "business_id": {"$in": business_neighbours} })
+
+    business['recommended_reviews'] = list(business_reviews_to_save)
+
+    result = db.businesses.replace_one({ 'business_id': business_id }, business)
+
+    # success_message = 'Modified businesses (%d) ids' % len(result.modified_count)
+
     return list(businesses_collection.find({ "business_id": {"$in": business_neighbours} }))
+
+
+def business_recommended_reviews(business_id):
+
+    business = businesses_collection.find_one({ 'business_id': business_id })
+
+    recommended_reviews = list(business.get('recommended_reviews'))
+
+    kn_reviews_df = pd.DataFrame(recommended_reviews)
+    kn_reviews_df['useful_mean'] = kn_reviews_df['useful'].mean()
+    kn_reviews_df['is_useful'] = kn_reviews_df['useful'] > kn_reviews_df['useful_mean']
+
+    # Build TF-IDF for reviews
+
+    reviews_texts=kn_reviews_df['text']
+
+    # Clean especial characters
+
+    clear_text_list=[]
+    for x in reviews_texts:
+        y=re.sub(r'[,.!-?¿¡"&$%#\n\t]','',x.lower())
+        clear_text_list.append(y)
+    
+    # Se crea una matrix de conteo de (textos x palabras), se ignoran las palabras que aparezcan en el 85% de los documentos(no relevantes)
+
+    cv=CountVectorizer(max_df=0.85, stop_words="english")
+    word_count_vector=cv.fit_transform(clear_text_list)
+
+    # Se convierte la matriz dispersa a dataframe
+
+    # keywords_df = pd.DataFrame(word_count_vector.toarray())
+
+    #Calculo de TF- IDF sobre la matriz dispersa, smooth_idf modifica la formula matematica False para no ignorar completamente los terminos que aparecen en todos los textos
+    #Se utiliza normalizacion coseno
+    #use_idf true para calcular la ponderacion inversa de frecuencia
+
+    Tfidf_transformer=TfidfTransformer(smooth_idf=False,use_idf=True)
+    Tfidf_transformer.fit(word_count_vector)
+
+    keyword_tf_idf_df = pd.DataFrame(Tfidf_transformer.transform(word_count_vector).toarray())
+
+    # Find reviews for a business
+
+    keywords_df_with_class = pd.concat([kn_reviews_df['review_id'], kn_reviews_df['is_useful'], keyword_tf_idf_df], axis=1)
+
+    #Con esta configuración se utilizan los 3 vecinos más cercanos, con distancia euclidiana
+    knn_clasif=KNeighborsClassifier(3)
+
+    # Fit recibe la matriz de entrenamiento y la clase objetivo
+    knn_clasif.fit(keyword_tf_idf_df, keywords_df_with_class['is_useful'])
+
+    # llamamos predict sobre  los test , creando una nueva columna en el dataframe de test
+    keywords_df_with_class['predict']=knn_clasif.predict(keyword_tf_idf_df)
+
+    reviews_ids = list(keywords_df_with_class[ keywords_df_with_class.is_useful & keywords_df_with_class.predict]['review_id'])
+
+    return list(db.reviews.find({ "review_id": {"$in": reviews_ids} }))
