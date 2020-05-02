@@ -120,7 +120,7 @@ def business_recommended_reviews(business_id):
 
     # Se convierte la matriz dispersa a dataframe
 
-    # keywords_df = pd.DataFrame(word_count_vector.toarray())
+    keywords_df = pd.DataFrame(word_count_vector.toarray())
 
     #Calculo de TF- IDF sobre la matriz dispersa, smooth_idf modifica la formula matematica False para no ignorar completamente los terminos que aparecen en todos los textos
     #Se utiliza normalizacion coseno
@@ -142,8 +142,49 @@ def business_recommended_reviews(business_id):
     knn_clasif.fit(keyword_tf_idf_df, keywords_df_with_class['is_useful'])
 
     # llamamos predict sobre  los test , creando una nueva columna en el dataframe de test
-    keywords_df_with_class['predict']=knn_clasif.predict(keyword_tf_idf_df)
-
+    keywords_df_with_class['predict'] = knn_clasif.predict(keyword_tf_idf_df)
     reviews_ids = list(keywords_df_with_class[ keywords_df_with_class.is_useful & keywords_df_with_class.predict]['review_id'])
+    useful_reviews = db.reviews.find({ "review_id": {"$in": reviews_ids} })
 
-    return list(db.reviews.find({ "review_id": {"$in": reviews_ids} }))
+    #Get the number of occurrences of a keyword in all reviews
+    lista_de_tuplas=list(zip(cv.get_feature_names(),keywords_df.sum().to_list()))
+    #sort
+    lista_de_tuplas.sort(key=lambda tup: tup[1], reverse=True)
+    list_of_lists = [list(elem) for elem in lista_de_tuplas]
+
+    # Add relevant keywords to reviews
+    feature_names=cv.get_feature_names()
+    reviews_keywords=[]
+    for text in clear_text_list:
+        tf_idf_vector=Tfidf_transformer.transform(cv.transform([text]))
+        sorted_items=sort_coo(tf_idf_vector.tocoo())
+        keywords=extract_topn_from_vector(feature_names,sorted_items,10)
+        reviews_keywords.append( list( keywords.keys() ) )
+    
+    relevant_keywords_df = pd.DataFrame(reviews_keywords)
+    relevant_keywords_df = pd.concat([keywords_df_with_class['review_id'], relevant_keywords_df], axis=1)
+
+    for index, row in relevant_keywords_df.iterrows():
+        db.reviews.update_one({ 'review_id': row['review_id'] }, 
+                              { '$set': { 'relevant_keywords': reviews_keywords[index] }})
+    
+    return list(useful_reviews), list_of_lists[:100]
+
+
+def sort_coo(coo_matrix):
+    tuples=zip(coo_matrix.col,coo_matrix.data)
+    return sorted(tuples,key=lambda x:(x[1],x[0]),reverse=True)
+
+
+#Extra de todas las keywords las n-keywords mas relevantes(TF-IDF)
+def extract_topn_from_vector(feature_names, sorted_items,topn=10):
+    sorted_items=sorted_items[:topn]
+    score_vals=[]
+    feature_vals=[]   
+    for idx,score in sorted_items:
+        score_vals.append(round(score,3))
+        feature_vals.append(feature_names[idx])
+    results={}
+    for idx in range(len(feature_vals)):
+        results[feature_vals[idx]]=score_vals[idx]
+    return results 

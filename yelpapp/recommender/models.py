@@ -36,6 +36,7 @@ class Review (mongoengine.Document):
     cool = mongoengine.IntField()
     text = mongoengine.StringField()
     date = mongoengine.StringField()
+    relevant_keywords = mongoengine.ListField()
     meta = {
         'collection': 'reviews',
         'indexes': [

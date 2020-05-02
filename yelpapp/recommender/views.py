@@ -48,11 +48,15 @@ def business_neighbours(request, business_id):
 
 def business_recommended_reviews_view(request, business_id):
     business = businesses.filter(business_id=business_id).first()
+
+    reviews, keyword_list = business_recommended_reviews(business_id)
+
     context = {
         'business_name': business.name,
-        'reviews': business_recommended_reviews(business_id)
+        'reviews': reviews,
+        'keyword_list': keyword_list
     }
-    return render(request, 'business_reviews.html', context=context)
+    return render(request, 'business_recommended_reviews.html', context=context)
 
 
 def add_business(request):
