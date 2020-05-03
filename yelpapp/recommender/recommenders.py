@@ -42,9 +42,12 @@ def neighbours_for_business(business_id):
     # group reviews dataframe by number of reviews and remove those businesses that have just one review
     reviews_group = reviews_df.groupby('business_id')['stars'].agg({'count'}).sort_values(by='count', ascending=False)
     reviews_group = reviews_group[reviews_group['count'] < 2].reset_index()
-    reviews_df_filtered = reviews_df.merge(reviews_group, how="inner", on="business_id").drop('count', axis=1)
-    reviews_df_filtered = pd.concat([reviews_df,reviews_df_filtered])
-    reviews_df_filtered = reviews_df_filtered.drop_duplicates(keep=False)
+    if reviews_group.shape[0] > 0:
+        reviews_df_filtered = reviews_df.merge(reviews_group, how="inner", on="business_id").drop('count', axis=1)
+        reviews_df_filtered = pd.concat([reviews_df,reviews_df_filtered])
+        reviews_df_filtered = reviews_df_filtered.drop_duplicates(keep=False)
+    else:
+        reviews_df_filtered = reviews_df
 
     # Create Surprise data
     reader = Reader( rating_scale= (1,5))
