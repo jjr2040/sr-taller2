@@ -1,0 +1,10 @@
+pymongo==3.10.1
+mongoengine==0.19.1
+Django==3.0.5
+# bson==0.5.9
+sns
+pandas
+scikit-surprise
+scikit-learn
+numpy==1.18.3
+notebook==6.0.3
