@@ -7,7 +7,7 @@ import uuid
 from .recommenders import neighbours_for_business, business_recommended_reviews
 
 from .models import Business, Review
-connect('yelp')
+connect('yelp', host='mongodb://mongo')
 
 businesses = Business.objects.order_by('name').all()
 
