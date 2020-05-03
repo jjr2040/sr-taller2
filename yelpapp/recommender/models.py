@@ -15,7 +15,7 @@ class Business (mongoengine.Document):
     review_count = mongoengine.IntField()
     is_open = mongoengine.IntField()
     attributes = mongoengine.ListField()
-    categories = mongoengine.StringField()
+    categories = mongoengine.ListField()
     hours = mongoengine.ListField()
     recommended_reviews = mongoengine.ListField(ReferenceField('Review'))
     meta = {
