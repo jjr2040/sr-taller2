@@ -19,7 +19,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 import pymongo
 from pymongo import MongoClient
 
-client = MongoClient()
+client = MongoClient(host='mongodb://mongo')
 db = client.yelp
 
 businesses_collection = db.businesses
