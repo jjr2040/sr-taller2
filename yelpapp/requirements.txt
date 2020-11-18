@@ -7,5 +7,5 @@ pandas
 scikit-surprise
 scikit-learn
 numpy==1.18.3
-notebook==6.0.3
+notebook==6.1.5
 django-cors-headers
