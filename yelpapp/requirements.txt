@@ -6,6 +6,6 @@ sns
 pandas
 scikit-surprise
 scikit-learn
-numpy==1.18.3
+numpy==1.22.0
 notebook==6.0.3
 django-cors-headers
